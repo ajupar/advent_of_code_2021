@@ -16,7 +16,8 @@ if __name__ == '__main__':
     # Day2.task2()
     # Day3.task1()
     # Day3.task2()
-    Day4.task1()
+    # Day4.task1()
+    Day4.task2()
 
 
 

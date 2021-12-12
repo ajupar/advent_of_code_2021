@@ -10,10 +10,10 @@ class BingoBoard:
 
         print(self, "my content is", self.content)
 
-    won = False
+    has_won = False
     content = []
 
-    def getContentAsNum(self, just_nums):
+    def getContent(self, just_nums: bool) -> List:
         ret = []
         for i in range(0, len(self.content)):
             temp_ret = []
@@ -66,6 +66,12 @@ class BingoBoard:
                     # print("Hit at index", i, j)
                     self.content[i][j].called = True
 
+        for count, row in enumerate(self.content):
+            if all(x.called for x in row):
+                self.has_won = True
+            if all(row2[count].called for row2 in self.content):
+                self.has_won = True
+
 
     def checkRowsColumns(self) -> bool:
         """
@@ -73,13 +79,7 @@ class BingoBoard:
         :return: rivi tai sarake täysi (bool)
         """
 
-        for count, row in enumerate(self.content):
-            if all(x.called for x in row):
-                return True
-            if all(row2[count].called for row2 in self.content):
-                return True
-
-        return False
+        return self.has_won
 
 
 class BingoNum:
@@ -112,6 +112,7 @@ def readInput():
     for count, num in enumerate(nums_to_call):
         nums_to_call[count] = int(num)
 
+    print("nums to call", nums_to_call)
     board_input = input_lines[1:]
     print("board input", board_input)
 
@@ -129,9 +130,9 @@ def readInput():
 
     print(boards)
     print("boards length", len(boards))
-    print("boards[0] content", boards[0].getContentAsNum(True))
-    print("boards[1] content", boards[1].getContentAsNum(True))
-    print("boards[2] content", boards[2].getContentAsNum(True))
+    print("boards[0] content", boards[0].getContent(True))
+    print("boards[1] content", boards[1].getContent(True))
+    print("boards[2] content", boards[2].getContent(True))
 
     print("boards[0] checkRowsColumns", boards[0].checkRowsColumns())
     print("boards[0] getIterableContent", boards[0].getIterableContent(True))
@@ -152,7 +153,7 @@ def readInput():
     # print("boards[1].checkRowsColumns", boards[1].checkRowsColumns())  # metodi ei toimi vielä
 
 
-def callNums():
+def call_nums_task1():
 
     board_won = False
 
@@ -188,12 +189,51 @@ def calculate_winning_score(winning_board: BingoBoard):
     print("product:", win_sum * current_called_num)
 
 
+def call_nums_task2():
+
+    board: BingoBoard
+
+    global current_called_num_task2
+
+    print("boards len", len(boards))
+    last_winner_found = False
+
+    for num_call_count, current_called_num_task2 in enumerate(nums_to_call):
+        print("count of boards that won", len(list(filter(lambda x: x.has_won, boards))))
+        for board in boards:
+            board.callNum(current_called_num_task2)
+
+            if len(list(filter(lambda x: x.has_won, boards))) == len(boards):
+                print("HIT count of boards that won", len(list(filter(lambda x: x.has_won, boards))))
+                last_winner_found = True
+                last_winning_board = board
+                calculate_last_winner_score(last_winning_board)
+                break
+
+        if last_winner_found:
+            break
+
+
+def calculate_last_winner_score(last_board_in: BingoBoard):
+    win_sum = 0
+    print("last_board_in", last_board_in.getContent(True))
+
+    for count, row in enumerate(last_board_in.content):
+        for bnum in row:
+            if not bnum.called:
+                win_sum += bnum.num
+
+    print("uncalled nums sum:", win_sum)
+    print("current_called_num_task2:", current_called_num_task2)
+    print("product:", win_sum * current_called_num_task2)
+
+
 def task1():
 
     print("task1")
     readInput()
 
-    callNums()
+    call_nums_task1()
 
 
 
@@ -201,3 +241,14 @@ def task1():
 
 def task2():
     print("task2")
+    readInput()
+
+    call_nums_task2()
+    # for count, board in enumerate(boards):
+    #     print("board nr", count)
+    #     for x in board.getContent(False):
+    #         for y in x:
+    #             print(y.called)
+    #         print("-")
+    #     print("---")
+
