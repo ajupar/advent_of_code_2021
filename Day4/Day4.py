@@ -24,8 +24,10 @@ class BingoBoard:
 
     def getIterableContent(self, just_nums):
         """
+        Palauttaa sisällön iteroitavassa muodossa
         :type just_nums: bool
         """
+
         it = []
         for i in range(0, len(self.content)):
             for j in range(0, len(self.content[i])):
@@ -65,12 +67,18 @@ class BingoBoard:
                     self.content[i][j].called = True
 
 
-    def checkRowsColumns(self):
-        for i in range(0, self.dim_x):
-            full_row = all(bn.called for bn in self.content[i])
-            full_column = all(bn.called for bn in list(map(lambda x: x[i], self.content)))
-            if full_row or full_column:
+    def checkRowsColumns(self) -> bool:
+        """
+        Kertoo, onko jokin bingotaulun rivi tai sarake täysi
+        :return: rivi tai sarake täysi (bool)
+        """
+
+        for count, row in enumerate(self.content):
+            if all(x.called for x in row):
                 return True
+            if all(row2[count].called for row2 in self.content):
+                return True
+
         return False
 
 
@@ -84,21 +92,28 @@ class BingoNum:
     called = False
 
 
+boards = []
+
+
 def readInput():
 
-    with open('Day4/test_input.txt') as f:
+    with open('Day4/Day4_input.txt') as f:
         input_lines = f.readlines()
 
     print(input_lines)
 
+
+    global nums_to_call
     nums_to_call = input_lines[0].split(',')
     nums_to_call[-1] = nums_to_call[-1].rstrip("\n")
-    print(nums_to_call)
 
-    board_input = input_lines[1:-1]
+    #input_lines.append("\n")  # lukumetodi olettaa, että viimeisenä tyhjä rivi
+
+    for count, num in enumerate(nums_to_call):
+        nums_to_call[count] = int(num)
+
+    board_input = input_lines[1:]
     print("board input", board_input)
-
-    boards = []
 
     i = 0
     while i < len(board_input):
@@ -124,19 +139,63 @@ def readInput():
     bn = BingoNum(3)
     print("bn num", bn.num)
 
-    for board in boards:
-       board.callNum(9)
-       board.callNum(18)
-       board.callNum(13)
-       board.callNum(17)
-       board.callNum(15)
+    # board: BingoBoard
+    # for board in boards:
+    #     board.callNum(22)
+    #     board.callNum(5)
+    #     board.callNum(23)
+    #     board.callNum(4)
+    #     board.callNum(6)
 
-    print("boards[1].content[1][2].called", boards[1].content[1][2].called)
-    print("boards[1].checkRowsColumns", boards[1].checkRowsColumns())  # metodi ei toimi vielä
+    # print("boards[1].content[1][2].called", boards[1].content[1][2].called)
+    # print("boards[1].content[1] (second row) called)", boards[1].content[1][0].called, boards[1].content[1][1].called, boards[1].content[1][2].called, boards[1].content[1][3].called, boards[1].content[1][4].called)
+    # print("boards[1].checkRowsColumns", boards[1].checkRowsColumns())  # metodi ei toimi vielä
+
+
+def callNums():
+
+    board_won = False
+
+    board: BingoBoard
+
+    global current_called_num
+
+    for num_call_count, current_called_num in enumerate(nums_to_call):
+        for board in boards:
+            board.callNum(current_called_num)
+
+        for board in boards:
+            if board.checkRowsColumns():
+                board_won = True
+                winning_board = board
+                break
+
+        if board_won:
+            calculate_winning_score(winning_board)
+            break
+
+
+def calculate_winning_score(winning_board: BingoBoard):
+    win_sum = 0
+
+    for count, row in enumerate(winning_board.content):
+        for bnum in row:
+            if not bnum.called:
+                win_sum += bnum.num
+
+    print("uncalled nums sum:", win_sum)
+    print("current_called_num:", current_called_num)
+    print("product:", win_sum * current_called_num)
+
 
 def task1():
+
     print("task1")
     readInput()
+
+    callNums()
+
+
 
 
 
